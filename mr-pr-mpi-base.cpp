@@ -3,11 +3,11 @@
 #include <map>
 #include <vector>
 #include <mpi.h>
-#include "mapreduce.h"
-#include "keyvalue.h"
+#include "mr_mpi_lib/mapreduce.h"
+#include "mr_mpi_lib/keyvalue.h"
 
 using namespace std;
-using namespace MAPREDUCE_NS
+using namespace MAPREDUCE_NS;
 
 #define WORLD MPI_COMM_WORLD
 #define Init MPI_Init
@@ -22,8 +22,15 @@ using namespace MAPREDUCE_NS
 #define DAMP 0.85
 #define ERR_THRESHOLD 1e-5
 
-int main(int argc, char const *argv[])
+int rank_id, procs;
+
+int main(int argc, char *argv[])
 {
-	cout << "Hello\n";
+	Init(&argc, &argv);
+	MapReduce *mr = new MapReduce(WORLD);
+	
+	mr->collate();
+	delete mr;
+	Finalize();
 	return 0;
 }
