@@ -8,6 +8,8 @@ using namespace std;
 
 #define WORLD MPI_COMM_WORLD
 #define Init MPI_Init
+#define Comm_Rank MPI_Comm_rank
+#define Comm_Size MPI_Comm_size
 #define Finalize MPI_Finalize
 #define Send MPI_Send
 #define Recv MPI_Recv
@@ -137,8 +139,8 @@ double get_error(const vector<double> &v1, const vector<double> &v2)
 int main(int argc, char *argv[])
 {
 	Init(&argc, &argv);
-	MPI_Comm_rank(WORLD, &rank_id);
-	MPI_Comm_size(WORLD, &procs);
+	Comm_Rank(WORLD, &rank_id);
+	Comm_Size(WORLD, &procs);
 	Status status;
 
 	// INIT Process
