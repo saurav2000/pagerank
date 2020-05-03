@@ -16,7 +16,7 @@
 #   endif
 #endif
 
-#include "mapreduce.hpp"
+#include "mr_cpp_lib/mapreduce.hpp"
 using namespace std;
 
 #define DAMP 0.85
