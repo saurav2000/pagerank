@@ -146,7 +146,7 @@ void myscan(char *key, int keybytes, char *value, int valuebytes, void *ptr)
 {
 	int a = *((int*)(key));
 	double b = *((double*)(value));
-	new_pageranks[a] += b;
+	new_pageranks[a] = b;
 }
 
 int main(int argc, char *argv[])
