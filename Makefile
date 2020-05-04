@@ -14,3 +14,6 @@ mpi:
 
 mpi_base:
 	$(MCC) mr-pr-mpi-base.cpp $(MRMPI) -o mpi_base_exec
+
+clean:
+	rm cpp_exec mpi_exec mpi_base_exec
