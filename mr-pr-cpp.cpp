@@ -29,6 +29,7 @@ int N = 0;
 double danglingPG = 0;
 vector<double> pageranks;
 vector<double> new_pageranks;
+vector<double> zero;
 
 template<typename MapTask>
 class graphsource : mapreduce::detail::noncopyable
@@ -64,7 +65,6 @@ struct map_task: public mapreduce::map_task<int, vector<int> >
 	void operator()(Runner &runner, const key_type &key, const value_type &value)
 	{
 		typedef typename Runner::reduce_task_type::key_type emit_key_type;
-		runner.emit_intermediate(key, 0);
 		if(value.size() == 0)
 			danglingPG += pageranks[key];
 		for(const int &v: value)
@@ -87,7 +87,6 @@ struct reduce_task: public mapreduce::reduce_task<int, double>
 		value_type result = 0.0;
 		for(It it1=it; it1!=ite; ++it1)
 			result += ((*it1) * DAMP);
-		result += ((1 - DAMP) / N) + ((danglingPG * DAMP) / N);
 		runner.emit(key, result);
 	}
 };
@@ -117,18 +116,23 @@ void read_graph(string filename)
 {
 	ifstream fin;
 	fin.open(filename);
-	int x, y;
+	int x, y, max_v = 0;
 	while(fin >> x >> y)
 	{
-		graph[x]; graph[y];
 		graph[x].push_back(y);
+		max_v = max(x, max(y, max_v));
 	}
 	fin.close();
+	for(int i=0;i<=max_v;++i)
+		graph[i];
 	N = graph.size();
 	danglingPG = 0;
 	for(int i=0; i<N; ++i)
+	{
 		pageranks.push_back(1.0 / N);
-	new_pageranks = pageranks;
+		zero.push_back(0);
+	}
+	new_pageranks = zero;
 }
 
 int main(int argc, char const *argv[])
@@ -137,33 +141,25 @@ int main(int argc, char const *argv[])
 	read_graph(filename + ".txt");
 
 	mapreduce::specification spec;
-	spec.reduce_tasks = max(1U, thread::hardware_concurrency());
 
 	double error = 1;
-	int iter = 0;
 	while(error > ERR_THRESHOLD)
 	{
 		pagerank_job::datasource_type data;
 		pagerank_job job(data, spec);
 		mapreduce::results result;
 		job.run<mapreduce::schedule_policy::sequential<pagerank_job> >(result);
-		int count = 0;
 		for(auto it=job.begin_results(); it!=job.end_results(); ++it)
-		{
-			count++;
 			new_pageranks[it->first] = it->second;
-		}
+		for(int i=0; i<N; ++i)
+			new_pageranks[i] += ((1 - DAMP) / N) + ((danglingPG * DAMP) / N);
 
-		if(count != N)
-			cout << count << " error\n";
 		error = get_error(pageranks, new_pageranks);
 		// cout << error << "\n";
 		pageranks = new_pageranks;
+		new_pageranks = zero;
 		danglingPG = 0;
-		++iter;
 	}
-
-	cout << iter << "\n";
 
 	filename += "-pr-cpp.txt";
 	ofstream fout(filename);

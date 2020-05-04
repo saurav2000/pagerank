@@ -26,13 +26,13 @@ map<int, vector<int> > graph;
 double danglingPG = 0;
 vector<double> pageranks;
 vector<double> new_pageranks;
-vector<double> zero_vector;
+vector<double> zero;
 map<int, vector<double> > intermediates;
 map<int, double> reduce_res;
 
 void map_task(int key, vector<int> &value)
 {
-	intermediates[key].push_back(0);
+	// intermediates[key].push_back(0);
 	if(value.size() == 0)
 		danglingPG += pageranks[key];
 	for(int v: value)
@@ -44,26 +44,29 @@ void reduce_task(int key, vector<double> &value)
 	double res = 0.0;
 	for(int i=0;i<value.size();++i)
 		res += value[i];
-	reduce_res[key] += res;
+	reduce_res[key] = res;
 }
 
 void read_graph(string filename)
 {
-	ifstream fin(filename);
-	int x, y;
+	ifstream fin;
+	fin.open(filename);
+	int x, y, max_v = 0;
 	while(fin >> x >> y)
 	{
-		graph[x]; graph[y];
 		graph[x].push_back(y);
+		max_v = max(x, max(y, max_v));
 	}
 	fin.close();
+	for(int i=0;i<=max_v;++i)
+		graph[i];
 	N = graph.size();
-	for(int i=0;i<N;++i)
+	for(int i=0; i<N; ++i)
 	{
 		pageranks.push_back(1.0 / N);
-		new_pageranks.push_back(0);
-		zero_vector.push_back(0);
+		zero.push_back(0);
 	}
+	new_pageranks = zero;
 }
 
 double sum(const vector<double> &v)
@@ -116,7 +119,7 @@ void receive_graph()
 	{
 		pageranks.push_back(0);
 		new_pageranks.push_back(0);
-		zero_vector.push_back(0);
+		zero.push_back(0);
 	}
 }
 
@@ -164,7 +167,7 @@ int main(int argc, char *argv[])
 		calc_part_pageranks();
 		if(!rank_id)
 		{
-			new_pageranks = zero_vector;
+			new_pageranks = zero;
 			// Dangling sum
 			for(int c=1; c<procs; ++c)
 			{
