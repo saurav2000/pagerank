@@ -112,6 +112,15 @@ double sum(const vector<double> &v)
 	return res;
 }
 
+void write_graph(string filename)
+{
+	ofstream fout(filename);
+	for(int i=0;i<N;++i)
+		fout << i << " = " << pageranks[i] << "\n";
+	fout << "sum = " << sum(pageranks) <<"\n";
+	fout.close();
+}
+
 void read_graph(string filename)
 {
 	ifstream fin;
@@ -162,10 +171,6 @@ int main(int argc, char const *argv[])
 	}
 
 	filename += "-pr-cpp.txt";
-	ofstream fout(filename);
-	for(int i=0;i<N;++i)
-		fout << i << " = " << pageranks[i] << "\n";
-	fout << "sum = " << sum(pageranks) <<"\n";
-	fout.close();
+	write_graph(filename);
 	return 0;
 }
